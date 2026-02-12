@@ -1,12 +1,12 @@
 // Villa Coloc Bali - Prisma Schema
-// Using SQLite for development simplicity
+// Using PostgreSQL (Neon) for production
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
