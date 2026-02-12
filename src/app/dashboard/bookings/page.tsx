@@ -301,7 +301,7 @@ export default function BookingsPage() {
     fetchBookings();
   }, [user]);
 
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
 
   const activeBookings = useMemo(
     () =>
