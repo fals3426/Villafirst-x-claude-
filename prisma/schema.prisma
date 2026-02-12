@@ -1,0 +1,125 @@
+// Villa Coloc Bali - Prisma Schema
+// Using SQLite for development simplicity
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String
+  type        String   // COLOCATAIRE or PROPRIETAIRE
+  avatar      String?
+  nationality String?
+  age         Int?
+  languages   String   @default("[]") // JSON array
+  verified    Boolean  @default(false)
+  badges      String   @default("[]") // JSON array
+  createdAt   DateTime @default(now())
+
+  vibeProfile    VibeProfile?
+  ownedVillas    Villa[]        @relation("VillaOwner")
+  bookings       Booking[]
+  sentMessages   Message[]      @relation("MessageSender")
+  receivedMessages Message[]    @relation("MessageReceiver")
+  matchesAsUser1 Match[]        @relation("MatchUser1")
+  matchesAsUser2 Match[]        @relation("MatchUser2")
+}
+
+model VibeProfile {
+  id                  String  @id @default(cuid())
+  userId              String  @unique
+  user                User    @relation(fields: [userId], references: [id])
+  budget              String
+  duration            String
+  preferredZones      String  @default("[]") // JSON array
+  interests           String  @default("[]") // JSON array
+  lifestyle           String  @default("[]") // JSON array
+  workStyle           String?
+  schedule            String?
+  personalitySocial   Int
+  personalityOrganized Int
+  personalityParty    Int
+  personalityFitness  Int
+  personalityCalm     Int
+  smokingOk           Boolean @default(false)
+  petsOk              Boolean @default(true)
+  veganOk             Boolean @default(true)
+  bio                 String?
+}
+
+model Villa {
+  id              String   @id @default(cuid())
+  title           String
+  zone            String
+  exactLocation   String
+  latitude        Float
+  longitude       Float
+  ownerId         String
+  owner           User     @relation("VillaOwner", fields: [ownerId], references: [id])
+  pricePerMonth   Int
+  priceEUR        Int
+  priceUSD        Int
+  currency        String   @default("IDR")
+  deposit         Int
+  totalRooms      Int
+  availableRooms  Int
+  bathrooms       Int
+  photos          String   @default("[]") // JSON array
+  description     String
+  amenities       String   @default("[]") // JSON array
+  vibe            String   @default("[]") // JSON array
+  verified        Boolean  @default(false)
+  badges          String   @default("[]") // JSON array
+  minimumStay     String
+  createdAt       DateTime @default(now())
+
+  bookings Booking[]
+  matches  Match[]
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  villaId       String
+  villa         Villa    @relation(fields: [villaId], references: [id])
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  roomNumber    Int
+  startDate     DateTime
+  endDate       DateTime
+  totalPrice    Int
+  status        String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED
+  transactionId String?
+  createdAt     DateTime @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("MessageReceiver", fields: [receiverId], references: [id])
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Match {
+  id        String   @id @default(cuid())
+  user1Id   String
+  user1     User     @relation("MatchUser1", fields: [user1Id], references: [id])
+  user2Id   String
+  user2     User     @relation("MatchUser2", fields: [user2Id], references: [id])
+  villaId   String?
+  villa     Villa?   @relation(fields: [villaId], references: [id])
+  score     Int
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt DateTime @default(now())
+}
